@@ -1,6 +1,8 @@
 import streamlit as st
 import pandas as pd
 import warnings
+import io
+
 warnings.filterwarnings("ignore")
 
 st.set_page_config(page_title="Order Data Cleaner", layout="wide")
@@ -53,7 +55,7 @@ if uploaded_file is not None:
         # Format date range for file name
         start_date_str = dispatch_date_range[0].strftime('%d-%m-%Y')
         end_date_str = dispatch_date_range[1].strftime('%d-%m-%Y')
-        file_name = f"cleaned_orders_{start_date_str}_to_{end_date_str}.csv"
+        file_name = f"cleaned_orders_{start_date_str}_to_{end_date_str}.xlsx"
 
         # Display Dispatch Date range
         st.subheader("📅 Dispatch Date Range")
@@ -63,12 +65,17 @@ if uploaded_file is not None:
         st.subheader("Cleaned Data Preview")
         st.dataframe(data.head(20))
 
-        # Convert to CSV for download
-        csv_data = data.to_csv(index=False).encode('utf-8')
+        # Convert DataFrame to Excel in memory
+        buffer = io.BytesIO()
+        data.to_excel(buffer, index=False, engine='openpyxl')
+        buffer.seek(0)
 
+        # Download button for Excel
         st.download_button(
-            label="⬇️ Download Cleaned CSV",
-            data=csv_data,
+            label="⬇️ Download Cleaned Excel",
+            data=buffer,
             file_name=file_name,
-            mime="text/csv"
+            mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
         )
+
+
